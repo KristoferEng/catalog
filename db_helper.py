@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Category, Item, User
 
 # Initialize the database to work with and bind it to Base
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine('postgresql://catalog:udacity@localhost/catalog')
 Base.metadata.bind = engine
 
 # Create a new session to access and update the database

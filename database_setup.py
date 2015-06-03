@@ -65,7 +65,7 @@ class Item(Base):
         }
 
 # Initializes the database to work with
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine('postgresql://catalog:udacity@localhost/catalog')
 
 # Binds database to Base
 Base.metadata.create_all(engine)

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for
 from sqlalchemy import create_engine, asc
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from database_setup import Base, Category, Item, User
 from db_helper import getUserID, createUser, getUserInfo
 from flask import session as login_session_2
@@ -30,19 +30,21 @@ def login_required(f):
     return decorated_function
 
 # Initialize the database to work with and bind it to Base
-engine = create_engine('sqlite:///catalog.db')
+engine = create_engine('postgresql://catalog:udacity@localhost/catalog')
 Base.metadata.bind = engine
 
 # Create a new session to access and update the database
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
+session = scoped_session(sessionmaker(bind=engine))
 
 app = Flask(__name__)
 
-# Save for later use
-CLIENT_ID = json.loads(open('client_secrets.json',
-                            'r').read())['web']['client_id']
+@app.after_request
+def remove_session(response):
+    session.remove()
+    return response
 
+# Save for later use
+CLIENT_ID = "813346898687-jp8fq0jq0dqob51os7hs9m3787vugg92.apps.googleusercontent.com"
 
 @app.route('/')
 @app.route('/catalog')
@@ -86,7 +88,7 @@ def gconnect():
 
     # Upgrade the authorization code into a credentials object
     try:
-        oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        oauth_flow = flow_from_clientsecrets('/var/www/catalog/catalog/client_secrets.json', scope='')
         oauth_flow.redirect_uri = 'postmessage'
         credentials = oauth_flow.step2_exchange(code)
     except FlowExchangeError:
@@ -456,5 +458,5 @@ if __name__ == '__main__':
     """Checks if it is called and sets the port."""
 
     app.secret_key = 'super_secret_key'
-    app.debug = True
-    app.run(host='0.0.0.0', port=8080)
+#    app.debug = True
+    app.run()
